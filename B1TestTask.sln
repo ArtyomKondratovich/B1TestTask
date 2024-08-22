@@ -5,7 +5,7 @@ VisualStudioVersion = 17.10.35122.118
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "B1TestTask.Main", "B1TestTask.Main\B1TestTask.Main.csproj", "{D46C2B70-93E5-429A-B47D-59BA038A8FE3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "B1TestTask.Domain", "B1TestTask.Domain\B1TestTask.Domain.csproj", "{E12D478A-435C-4891-9F84-9997E7D2F276}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "B1TestTask.DataAccess", "B1TestTask.Domain\B1TestTask.DataAccess.csproj", "{E12D478A-435C-4891-9F84-9997E7D2F276}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

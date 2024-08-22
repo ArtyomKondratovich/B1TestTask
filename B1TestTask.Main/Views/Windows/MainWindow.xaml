@@ -7,12 +7,14 @@
         xmlns:cm="clr-namespace:B1TestTask.Main.Infastructure.Command"
         xmlns:vm="clr-namespace:B1TestTask.Main.ViewModels"
         mc:Ignorable="d"
-        Title="{Binding Title}"
         Height="450" 
-        Width="800">
+        Width="800"
+        Title="{Binding Title}">
+    
     <Window.DataContext>
         <vm:MainWindowViewModel/>
     </Window.DataContext>
+
     <DockPanel>
         <Menu DockPanel.Dock="Top">
             <MenuItem Header="Файл">
@@ -21,10 +23,10 @@
         </Menu>
         <StatusBar DockPanel.Dock="Bottom">
             <StatusBarItem>
-                <TextBlock Width="200"></TextBlock>
+                <TextBlock Width="229" x:Name="statusBlock" Text="{Binding StatusText}"></TextBlock>
             </StatusBarItem>
-            <StatusBarItem>
-                <ProgressBar Width="200" Height="10" Value="{Binding ProgressValue}"></ProgressBar>
+            <StatusBarItem Width="564">
+                <TextBlock Width="100" Visibility="Visible" x:Name="counter" Text="{Binding LoadedLines}"></TextBlock>
             </StatusBarItem>
         </StatusBar>
         <TabControl>
@@ -45,12 +47,12 @@
                             VerticalAlignment="Top" 
                             Height="20"
                             Command="{Binding GenerateFilesCommand}"/>
-                    <Button Content="Совместить файлы"
+                    <Button Content="Объединить файлы"
                             Margin="14,33,14,0" 
                             VerticalAlignment="Top" 
                             Height="20"
                             Command="{Binding MergeFilesCommand}">
-                        
+
                     </Button>
                     <Grid Grid.Column="2">
                         <Grid.RowDefinitions>
@@ -80,6 +82,7 @@
                             </ListBox>
                         </GroupBox>
                     </Grid>
+                    <Button x:Name="button2" Content="Сохранить файл в бд" Command="{Binding SaveFileCommand}" HorizontalAlignment="Center" Margin="0,58,0,0" VerticalAlignment="Top" Width="163"/>
                 </Grid>
             </TabItem>
             <TabItem Header="Задание 2">

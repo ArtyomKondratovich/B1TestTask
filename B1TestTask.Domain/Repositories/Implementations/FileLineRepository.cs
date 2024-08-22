@@ -17,7 +17,7 @@ namespace B1TestTask.Domain.Repositories.Impllementations
 
         public async Task<FileLine?> CreateAsync(FileLine entity, CancellationToken token = default)
         {
-            var created = await _dbContext.FileLines.AddAsync(entity, token);
+            var created = await _dbContext.FileLines.AddAsync(entity, token);   
 
             if (created != null)
             {

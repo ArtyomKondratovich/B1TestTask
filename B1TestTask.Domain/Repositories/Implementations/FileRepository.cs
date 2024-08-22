@@ -6,7 +6,7 @@ using System.Linq.Expressions;
 
 namespace B1TestTask.Domain.Repositories.Impllementations
 {
-    internal class FileRepository : IFileRepository
+    public class FileRepository : IFileRepository
     {
         private readonly FirstTaskDbContext _dbContext;
 

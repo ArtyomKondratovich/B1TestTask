@@ -10,6 +10,8 @@ namespace B1TestTask.Main.Views.Windows
             set { }
         }
 
+        public bool OkButtonClicked { get; set; } = false;
+
         public InputWindow(string messageStr)
         {
             InitializeComponent();
@@ -19,7 +21,14 @@ namespace B1TestTask.Main.Views.Windows
         private void OkButton_Click(object sender, RoutedEventArgs e)
         {
             Result = inputBlock.Text;
-            this.Close();
+            OkButtonClicked = true;
+            Close();
+        }
+
+        private void CancelButton_Click(object sender, RoutedEventArgs e)
+        {
+            OkButtonClicked = false;
+            Close();
         }
     }
 }

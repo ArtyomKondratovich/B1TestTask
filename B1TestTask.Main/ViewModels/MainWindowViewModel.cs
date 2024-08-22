@@ -1,11 +1,14 @@
 ﻿using B1TestTask.Main.Infastructure.Command;
 using B1TestTask.Main.Services;
+using B1TestTask.Main.Utilities.Events;
 using B1TestTask.Main.Utilities.Extensions;
 using B1TestTask.Main.ViewModels.Base;
 using B1TestTask.Main.Views.Windows;
+using Microsoft.Extensions.DependencyInjection;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
+using System.Windows;
 using System.Windows.Input;
 
 namespace B1TestTask.Main.ViewModels
@@ -16,7 +19,7 @@ namespace B1TestTask.Main.ViewModels
 
         #region AppTitleProperty
 
-        private string _title = "B1";
+        private string _title = "TestTask";
 
         public string Title
         {
@@ -44,7 +47,7 @@ namespace B1TestTask.Main.ViewModels
 
         #region DirectoryfilesProperty
 
-        private ObservableCollection<string> _files;
+        private ObservableCollection<string> _files = new();
 
         public ObservableCollection<string> Files
         {
@@ -56,12 +59,48 @@ namespace B1TestTask.Main.ViewModels
 
         #region ProgressValueProperty
 
-        private int _progressValue = 0;
+        private double _progressValue = 0;
 
-        public int ProgressValue 
+        public double ProgressValue 
         {
             get => _progressValue;
             set => Set(ref _progressValue, value);
+        }
+
+        #endregion
+
+        #region StatusTextProperty
+
+        private string _statusText = "";
+
+        public string StatusText 
+        {
+            get => _statusText;
+            set => Set(ref _statusText, value);
+        }
+
+        #endregion
+
+        #region LoadedLines
+
+        private int _loadedLines = 0;
+
+        public int LoadedLines
+        {
+            get => _loadedLines;
+            set => Set(ref _loadedLines, value);
+        }
+
+        #endregion
+
+        #region CounterVisabilityProperty
+
+        private bool _isCounterVisible = false;
+
+        public bool IsCounterVisible 
+        {
+            get => _isCounterVisible;
+            set => Set(ref _isCounterVisible, value);
         }
 
         #endregion
@@ -130,23 +169,58 @@ namespace B1TestTask.Main.ViewModels
 
         private async void OnGenerateFilesCommandExecuted(object? parameter) 
         {
-            var stopwatch = Stopwatch.StartNew();
-            try
+            StatusText = "Генерация файлов...";
+            var sw = Stopwatch.StartNew();
+            try 
             {
-                CurrentDirectoryPath = await FileService.GenerateFilesAsync(CurrentDirectoryPath);
+                CurrentDirectoryPath = await _fileService.GenerateFilesAsync(CurrentDirectoryPath);
             }
-            finally
-            {
-                stopwatch.Stop();
-                var elapsedTime = stopwatch.Elapsed;
-                // Вывести время выполнения в лог или показать пользователю
-                Console.WriteLine($"Время выполнения GenerateFilesAsync(): {elapsedTime.TotalMilliseconds} ms");
+            finally 
+            { 
+                sw.Stop();
+                var seconds = sw.Elapsed.TotalSeconds;
+                ProgressValue = 0;
+                StatusText = $"Генерация завершилась за {seconds} cек";
+                await Task.Delay(3000);
+                StatusText = string.Empty;
             }
         }
 
         private bool CanGenerateFilesCommandExecute(object? parameter) 
         {
             return Directory.Exists(CurrentDirectoryPath);
+        }
+
+        #endregion
+
+        #region SaveFilecommand
+
+        public ICommand SaveFileCommand { get; }
+
+        private async void OnSaveFileCommandExecuted(object? parameter)
+        {
+            var mergedFiles = Files.Where(x => x.Contains("merged"));
+
+            StatusText = "Строк загружено = ";
+
+            if (mergedFiles.Any()) 
+            {
+                var fileName = mergedFiles.First();
+
+                await _fileService.SaveFile(Path.Combine(CurrentDirectoryPath, fileName));
+            }
+
+            StatusText = "Файл успешно загружен";
+            await Task.Delay(3000);
+            StatusText = "";
+            LoadedLines = 0;
+        }
+
+        private bool CanSaveFileCommandExecute(object? parameter)
+        {
+            var mergedFiles = Files.Where(x => x.Contains("merged"));
+
+            return mergedFiles.Any();
         }
         #endregion
 
@@ -159,16 +233,39 @@ namespace B1TestTask.Main.ViewModels
             var inputWindow = new InputWindow("Перед объединением, вы можете удалить строки содержащие заданное сочетание символов. Например \"abc\"");
             inputWindow.ShowDialog();
 
-            var predicate = inputWindow.Result.GetPredicate();
+            if (inputWindow.OkButtonClicked)
+            {
+                StatusText = "Объединение файлов...";
+                var sw = Stopwatch.StartNew();
+                try
+                {
+                    var predicate = inputWindow.Result.GetPredicate();
+                    var validLines = await _fileService.MergeFiles(CurrentDirectoryPath, predicate);
 
-            var countLines = await FileService.MergeFiles(CurrentDirectoryPath, predicate);
-
-            Console.WriteLine($"строк загружено в файл: {countLines}");
+                    var messageBoxText = $"При объединении файлов было удалено {10_000_000 - validLines} строк с подстрокой '{inputWindow.Result}'";
+                    var caption = "Information";
+                    var button = MessageBoxButton.OK;
+                    var icon = MessageBoxImage.Information;
+                    System.Windows.MessageBox.Show(messageBoxText, caption, button, icon, MessageBoxResult.Yes);
+                }
+                finally
+                {
+                    sw.Stop();
+                    var seconds = sw.Elapsed.TotalSeconds;
+                    ProgressValue = 0;
+                    StatusText = $"Файлы объединены за {seconds} cек";
+                    //await Task.Delay(3000);
+                    //StatusText = string.Empty;
+                }
+                
+            }
         }
 
         private bool CanMergeFilesCommandExecute(object? parameter)
         {
-            return Directory.Exists(CurrentDirectoryPath) && Directory.GetFiles(CurrentDirectoryPath).Where(x => x.EndsWith(".txt")).Count() == 100;
+            return Directory.Exists(CurrentDirectoryPath) 
+                && Files
+                .Where(x => x.EndsWith(".txt") && int.TryParse(x[..^4], out _)).Count() == 100;
         }
 
         #endregion
@@ -177,7 +274,7 @@ namespace B1TestTask.Main.ViewModels
 
         #region Services
 
-        public IFilesService FileService { get; }
+        private IFilesService _fileService { get; }
 
         #endregion
 
@@ -191,13 +288,27 @@ namespace B1TestTask.Main.ViewModels
             LoadFilesFromDirectoryCommand = new LambdaCommand(OnLoadFilesfromDirectoryCommandExecuted, CanLoadFilesfromDirectoryCommandExecute);
             GenerateFilesCommand = new LambdaCommand(OnGenerateFilesCommandExecuted, CanGenerateFilesCommandExecute);
             MergeFilesCommand = new LambdaCommand(OnMergeFilesCommandexecuted, CanMergeFilesCommandExecute);
+            SaveFileCommand = new LambdaCommand(OnSaveFileCommandExecuted, CanSaveFileCommandExecute);
+
             #endregion
 
             #region Services
 
-            FileService = new FilesService();
+            _fileService = App.Services.GetRequiredService<IFilesService>();
+            _fileService.ProgressUpdated += FileService_ProgressUpdated;
+            _fileService.LoadedLinesUpdated += FileService_LoadedLinesUpdated;
 
             #endregion
+        }
+
+        private void FileService_ProgressUpdated(object sender, ProgressUpdatedEventArgs e)
+        {
+            ProgressValue = e.ProgressValue;
+        }
+
+        private void FileService_LoadedLinesUpdated(object sender, LoadedLinesEventArgs e)
+        {
+            LoadedLines = e.LoadedLines;
         }
     }
 }

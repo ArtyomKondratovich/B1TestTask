@@ -6,6 +6,7 @@ namespace B1TestTask.Main.ViewModels.Base
     internal abstract class ViewModelBase : INotifyPropertyChanged, IDisposable
     {
         public event PropertyChangedEventHandler PropertyChanged;
+
         private bool _disposed;
 
         protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null) 

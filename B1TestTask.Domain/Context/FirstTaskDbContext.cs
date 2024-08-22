@@ -8,6 +8,9 @@ namespace B1TestTask.Domain.Context
         public DbSet<MergedFile> Files { get; set; }
         public DbSet<FileLine> FileLines { get; set; }
 
-        public FirstTaskDbContext(DbContextOptions<FirstTaskDbContext> options) : base(options) { }
+        public FirstTaskDbContext(DbContextOptions<FirstTaskDbContext> options) : base(options) 
+        {
+            Database.Migrate();
+        }
     }
 }
