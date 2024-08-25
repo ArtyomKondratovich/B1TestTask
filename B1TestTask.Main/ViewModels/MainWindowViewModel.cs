@@ -105,6 +105,18 @@ namespace B1TestTask.Main.ViewModels
 
         #endregion
 
+        #region CanCommandsRunProperty
+
+        private bool _canCommandsRun = false;
+
+        public bool CanCommandsRun 
+        {
+            get => _canCommandsRun;
+            set => Set(ref _canCommandsRun, value);
+        }
+
+        #endregion
+
         #endregion
 
         #region Commands
@@ -118,7 +130,7 @@ namespace B1TestTask.Main.ViewModels
             System.Windows.Application.Current.Shutdown();
         }
 
-        private bool CanCloseApplicationCommandExecute(object? parametr) => true;
+        private bool CanCloseApplicationCommandExecute(object? parametr) => CanCommandsRun;
 
         #endregion
 
@@ -147,6 +159,7 @@ namespace B1TestTask.Main.ViewModels
 
         private void OnLoadFilesfromDirectoryCommandExecuted(object? parameter) 
         {
+            CanCommandsRun = false;
             var index = _currentDirectoryPath.Length + 1;
 
             var entries = Directory.GetFileSystemEntries(CurrentDirectoryPath)
@@ -154,11 +167,12 @@ namespace B1TestTask.Main.ViewModels
                 .Where(x => x.EndsWith(".txt") || Path.GetExtension(x) == "");
 
             Files = new ObservableCollection<string>(entries);
+            CanCommandsRun = true;
         }
 
         private bool CanLoadFilesfromDirectoryCommandExecute(object? parameter) 
         {
-            return Directory.Exists(CurrentDirectoryPath);
+            return Directory.Exists(CurrentDirectoryPath) && CanCommandsRun;
         }
 
         #endregion
@@ -169,6 +183,7 @@ namespace B1TestTask.Main.ViewModels
 
         private async void OnGenerateFilesCommandExecuted(object? parameter) 
         {
+            CanCommandsRun = false;
             StatusText = "Генерация файлов...";
             var sw = Stopwatch.StartNew();
             try 
@@ -184,11 +199,12 @@ namespace B1TestTask.Main.ViewModels
                 await Task.Delay(3000);
                 StatusText = string.Empty;
             }
+            CanCommandsRun = true;
         }
 
         private bool CanGenerateFilesCommandExecute(object? parameter) 
         {
-            return Directory.Exists(CurrentDirectoryPath);
+            return Directory.Exists(CurrentDirectoryPath) && CanCommandsRun;
         }
 
         #endregion
@@ -199,6 +215,7 @@ namespace B1TestTask.Main.ViewModels
 
         private async void OnSaveFileCommandExecuted(object? parameter)
         {
+            CanCommandsRun = false;
             var mergedFiles = Files.Where(x => x.Contains("merged"));
 
             StatusText = "Строк загружено = ";
@@ -214,13 +231,14 @@ namespace B1TestTask.Main.ViewModels
             await Task.Delay(3000);
             StatusText = "";
             LoadedLines = 0;
+            CanCommandsRun = true;
         }
 
         private bool CanSaveFileCommandExecute(object? parameter)
         {
             var mergedFiles = Files.Where(x => x.Contains("merged"));
 
-            return mergedFiles.Any();
+            return mergedFiles.Any() && CanCommandsRun;
         }
         #endregion
 
@@ -230,6 +248,7 @@ namespace B1TestTask.Main.ViewModels
 
         private async void OnMergeFilesCommandexecuted(object? parameter)
         {
+            CanCommandsRun = false;
             var inputWindow = new InputWindow("Перед объединением, вы можете удалить строки содержащие заданное сочетание символов. Например \"abc\"");
             inputWindow.ShowDialog();
 
@@ -259,13 +278,18 @@ namespace B1TestTask.Main.ViewModels
                 }
                 
             }
+            CanCommandsRun = true;
         }
 
         private bool CanMergeFilesCommandExecute(object? parameter)
         {
-            return Directory.Exists(CurrentDirectoryPath) 
+            return Directory.Exists(CurrentDirectoryPath)
                 && Files
-                .Where(x => x.EndsWith(".txt") && int.TryParse(x[..^4], out _)).Count() == 100;
+                .Where(
+                    x => x.EndsWith(".txt")
+                    && int.TryParse(x[..^4], out _))
+                .Count() == 100
+                && CanCommandsRun;
         }
 
         #endregion

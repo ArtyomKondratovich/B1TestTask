@@ -1,4 +1,4 @@
-﻿using B1TestTask.Domain.Context;
+﻿using B1TestTask.DataAccess.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;

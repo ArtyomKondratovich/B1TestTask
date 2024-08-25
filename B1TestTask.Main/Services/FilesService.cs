@@ -4,6 +4,7 @@ using B1TestTask.Domain.Repositories.Interfaces;
 using B1TestTask.Main.Utilities.Events;
 using B1TestTask.Main.Utilities.Extensions;
 using System.IO;
+using System.Runtime.InteropServices;
 
 namespace B1TestTask.Main.Services
 {
@@ -155,19 +156,40 @@ namespace B1TestTask.Main.Services
                 FileName = fileName
             };
 
-            var fileResult = await _fileRepository.CreateAsync(mergedFile);
+            var exists = _fileRepository
+                .GetByPredicateAsync((x) => x.FileName == mergedFile.FileName)
+                .Result
+                .ToList()
+                .Any();
 
-            if (fileResult != null)
+            if (exists) 
+            {
+                return;
+            }
+
+            var mergedFileEntity = await _fileRepository.CreateAsync(mergedFile);
+
+            var batchSize = 100_000;
+            var batch = new List<FileLine>();
+
+            if (mergedFileEntity != null)
             {
                 await foreach (var line in GetFileLinesAsync(fileName, (s) => true))
                 {
-                    var fileLine = line.Parse();
-                    fileLine.MergedFile = fileResult;
+                    OnLoadedLinesUpdated(new LoadedLinesEventArgs(++_linesSaved));
+                    batch.Add(line.Parse(mergedFileEntity));
 
-                    if (await _lineRepository.CreateAsync(fileLine) != null)
+                    if (batch.Count == batchSize)
                     {
-                        OnLoadedLinesUpdated(new LoadedLinesEventArgs(++_linesSaved));
+                        await _lineRepository.SaveBatchOfLinesAsync(batch);
+                        batch.Clear();
                     }
+                }
+
+                if (batch.Count > 0)
+                {
+                    await _lineRepository.SaveBatchOfLinesAsync(batch);
+                    batch.Clear();
                 }
             }
         }

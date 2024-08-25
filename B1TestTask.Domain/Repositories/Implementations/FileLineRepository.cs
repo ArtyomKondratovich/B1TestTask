@@ -1,4 +1,4 @@
-﻿using B1TestTask.Domain.Context;
+﻿using B1TestTask.DataAccess.Context;
 using B1TestTask.Domain.Entities;
 using B1TestTask.Domain.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -45,6 +45,12 @@ namespace B1TestTask.Domain.Repositories.Impllementations
         public async Task<IEnumerable<FileLine>> GetByPredicateAsync(Expression<Func<FileLine, bool>> predicate, CancellationToken token = default)
         {
             return await _dbContext.FileLines.Where(predicate).ToListAsync(token);
+        }
+
+        public async Task SaveBatchOfLinesAsync(IEnumerable<FileLine> lines)
+        {
+            await _dbContext.AddRangeAsync(lines);
+            await _dbContext.SaveChangesAsync();
         }
 
         public async Task<FileLine?> UpdateAsync(FileLine entity, CancellationToken token = default)

@@ -8,6 +8,8 @@
 
         public int BankAccount {  get; set; }
 
+        public BankAccountClass Class { get; set; }
+
         public OpeningBalance OpeningBalance { get; set; }
 
         public ClosingBalance ClosedBalance { get; set; }

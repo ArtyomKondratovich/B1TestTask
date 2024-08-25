@@ -1,4 +1,4 @@
-﻿using B1TestTask.Domain.Context;
+﻿using B1TestTask.DataAccess.Context;
 using B1TestTask.Domain.Entities;
 using B1TestTask.Domain.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -39,7 +39,7 @@ namespace B1TestTask.Domain.Repositories.Impllementations
 
         public async Task<MergedFile?> GetAsync(int id, CancellationToken token = default)
         {
-            return await _dbContext.Files.FirstOrDefaultAsync(x => x.Id == id, token);
+            throw new NotImplementedException();
         }
 
         public async Task<IEnumerable<MergedFile>> GetByPredicateAsync(Expression<Func<MergedFile, bool>> predicate, CancellationToken token = default)

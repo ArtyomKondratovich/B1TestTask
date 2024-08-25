@@ -28,7 +28,7 @@ namespace B1TestTask.Main.Utilities.Extensions
             return onlyName.Contains("merged") && fileInfo.Length > 6e+8;
         }
 
-        public static FileLine Parse(this string line)
+        public static FileLine Parse(this string line, MergedFile file)
         {
             var fields = line.Split("||");
 
@@ -42,7 +42,8 @@ namespace B1TestTask.Main.Utilities.Extensions
                 LatinStr = fields[1],
                 RussianStr = fields[2],
                 IntNumber = int.Parse(fields[3]),
-                DoubleNumber = double.Parse(fields[4])
+                DoubleNumber = double.Parse(fields[4]),
+                MergedFile = file
             };
         }
     }
