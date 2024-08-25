@@ -10,7 +10,7 @@
         Height="450" 
         Width="800"
         Title="{Binding Title}">
-    
+
     <Window.DataContext>
         <vm:MainWindowViewModel/>
     </Window.DataContext>
@@ -86,7 +86,28 @@
                 </Grid>
             </TabItem>
             <TabItem Header="Задание 2">
-
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="100"/>
+                        <ColumnDefinition Width="161*"/>
+                        <ColumnDefinition Width="533*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid Grid.Column="1">
+                        <GroupBox x:Name="groupBox1" Header="Сохранённые exel файлы">
+                            <ListBox x:Name="listBox" ItemsSource="{Binding SavedExelFiles}"
+                                     SelectedItem="{Binding SelectedExelFile}"
+                                     DisplayMemberPath="FilePath"
+                                     />
+                        </GroupBox>
+                    </Grid>
+                    <Button x:Name="button4" Content="Загрузить" Command="{Binding LoadExelFile}" HorizontalAlignment="Center" Margin="0,10,0,0" VerticalAlignment="Top" Width="80"/>
+                    <GroupBox x:Name="groupBox2" Grid.Column="2" Header="{Binding SelectedExelFile.FilePath}">
+                        <DataGrid x:Name="dataGrid" 
+                            ItemsSource="{Binding CurrentExelData.Rows}"
+                            IsReadOnly="True">
+                        </DataGrid>
+                    </GroupBox>
+                </Grid>
             </TabItem>
         </TabControl>
     </DockPanel>

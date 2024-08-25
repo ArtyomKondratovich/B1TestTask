@@ -1,7 +1,6 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using System.IO;
-using System.Security.RightsManagement;
 
 namespace B1TestTask.Main
 {

@@ -49,5 +49,10 @@ namespace B1TestTask.Main.ViewModels
         #endregion
 
         public InputWindowViewModel() : base() { }
+
+        protected override void MethodsOnPropertyChanged(string? propertyName)
+        {
+            
+        }
     }
 }

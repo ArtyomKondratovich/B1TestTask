@@ -4,13 +4,13 @@ using B1TestTask.Domain.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 
-namespace B1TestTask.Domain.Repositories.Impllementations
+namespace B1TestTask.Domain.Repositories.Implementations
 {
     public class FileLineRepository : IFileLineRepository
     {
-        private readonly FirstTaskDbContext _dbContext;
+        private readonly TaskDbContext _dbContext;
 
-        public FileLineRepository(FirstTaskDbContext dbContext)
+        public FileLineRepository(TaskDbContext dbContext)
         {
             _dbContext = dbContext;
         }

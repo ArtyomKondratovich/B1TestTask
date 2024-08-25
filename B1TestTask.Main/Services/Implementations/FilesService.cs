@@ -1,5 +1,4 @@
 ﻿using B1TestTask.Domain.Entities;
-using B1TestTask.Domain.Repositories.Impllementations;
 using B1TestTask.Domain.Repositories.Interfaces;
 using B1TestTask.Main.Utilities.Events;
 using B1TestTask.Main.Utilities.Extensions;

@@ -8,7 +8,7 @@ namespace B1TestTask.Main.Data
     internal static class DbRegistrator
     {
         public static IServiceCollection AddDatabase(this IServiceCollection services, IConfiguration configuration) => services
-            .AddDbContext<FirstTaskDbContext>(options =>
+            .AddDbContext<TaskDbContext>(options =>
             {
                 options.UseNpgsql(configuration.GetConnectionString("postgre"));
             });

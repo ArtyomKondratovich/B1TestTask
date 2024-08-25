@@ -23,6 +23,7 @@ namespace B1TestTask.Main.ViewModels.Base
 
             field = value;
             OnPropertyChanged(propertyName);
+            MethodsOnPropertyChanged(propertyName);
             return true;
         }
 
@@ -41,5 +42,7 @@ namespace B1TestTask.Main.ViewModels.Base
 
             // освободить ресурсы...
         }
+
+        protected abstract void MethodsOnPropertyChanged(string? propertyName);
     }
 }

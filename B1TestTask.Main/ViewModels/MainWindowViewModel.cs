@@ -1,4 +1,5 @@
-﻿using B1TestTask.Main.Infastructure.Command;
+﻿using B1TestTask.Domain.Entities;
+using B1TestTask.Main.Infastructure.Command;
 using B1TestTask.Main.Services;
 using B1TestTask.Main.Utilities.Events;
 using B1TestTask.Main.Utilities.Extensions;
@@ -107,12 +108,48 @@ namespace B1TestTask.Main.ViewModels
 
         #region CanCommandsRunProperty
 
-        private bool _canCommandsRun = false;
+        private bool _canCommandsRun = true;
 
         public bool CanCommandsRun 
         {
             get => _canCommandsRun;
             set => Set(ref _canCommandsRun, value);
+        }
+
+        #endregion
+
+        #region SavedExelFilesProperty
+
+        private ObservableCollection<ExelReport> _savedExelFiles;
+
+        public ObservableCollection<ExelReport> SavedExelFiles 
+        {
+            get => _savedExelFiles;
+            set => Set(ref _savedExelFiles, value);
+        }
+
+        #endregion
+
+        #region SelectedExelFileProperty
+
+        private ExelReport _selectedExelFile;
+
+        public ExelReport SelectedExelFile
+        {
+            get => _selectedExelFile;
+            set => Set(ref _selectedExelFile, value);
+        }
+
+        #endregion
+
+        #region CurrentFileData
+
+        private ExelData _currentExelData;
+
+        public ExelData CurrentExelData 
+        {
+            get => _currentExelData;
+            set => Set(ref _currentExelData, value);
         }
 
         #endregion
@@ -209,6 +246,43 @@ namespace B1TestTask.Main.ViewModels
 
         #endregion
 
+        #region LoadExelFileCommand
+
+        public ICommand LoadExelFile { get; }
+
+        private async void OnLoadExelFileCommandExecuted(object? parameter)
+        {
+            CanCommandsRun = false;
+
+            var fileDialog = new OpenFileDialog
+            {
+                DefaultExt = ".xls",
+                Filter = "Exel documents (.xls)|*.xls"
+            };
+
+            if (fileDialog.ShowDialog() == DialogResult.OK)
+            {
+                var filePath = fileDialog.FileName;
+
+                var data = await _exelService.SaveFileAsync(filePath);
+
+                if (data != null) 
+                {
+                    
+                }
+            }
+
+            UpdateData();
+            CanCommandsRun = true;
+        }
+
+        private bool CanLoadExelFileCommandExecute(object? parameter)
+        {
+            return CanCommandsRun;
+        }
+
+        #endregion
+
         #region SaveFilecommand
 
         public ICommand SaveFileCommand { get; }
@@ -278,6 +352,7 @@ namespace B1TestTask.Main.ViewModels
                 }
                 
             }
+            UpdateData();
             CanCommandsRun = true;
         }
 
@@ -300,6 +375,8 @@ namespace B1TestTask.Main.ViewModels
 
         private IFilesService _fileService { get; }
 
+        private IExelService _exelService { get; }
+
         #endregion
 
         public MainWindowViewModel() 
@@ -313,16 +390,20 @@ namespace B1TestTask.Main.ViewModels
             GenerateFilesCommand = new LambdaCommand(OnGenerateFilesCommandExecuted, CanGenerateFilesCommandExecute);
             MergeFilesCommand = new LambdaCommand(OnMergeFilesCommandexecuted, CanMergeFilesCommandExecute);
             SaveFileCommand = new LambdaCommand(OnSaveFileCommandExecuted, CanSaveFileCommandExecute);
+            LoadExelFile = new LambdaCommand(OnLoadExelFileCommandExecuted, CanLoadExelFileCommandExecute);
 
             #endregion
 
             #region Services
 
             _fileService = App.Services.GetRequiredService<IFilesService>();
+            _exelService = App.Services.GetRequiredService<IExelService>();
             _fileService.ProgressUpdated += FileService_ProgressUpdated;
             _fileService.LoadedLinesUpdated += FileService_LoadedLinesUpdated;
 
             #endregion
+
+            UpdateData();
         }
 
         private void FileService_ProgressUpdated(object sender, ProgressUpdatedEventArgs e)
@@ -333,6 +414,34 @@ namespace B1TestTask.Main.ViewModels
         private void FileService_LoadedLinesUpdated(object sender, LoadedLinesEventArgs e)
         {
             LoadedLines = e.LoadedLines;
+        }
+
+        private async void UpdateData() 
+        {
+            #region files
+            if (Directory.Exists(CurrentDirectoryPath))
+            {
+                LoadFilesFromDirectoryCommand.Execute(this);
+            }
+            #endregion
+
+            SavedExelFiles = new ObservableCollection<ExelReport>(await _exelService.GetReportsAsync());
+
+            if (SelectedExelFile != null && SelectedExelFile.Id != 0)
+            {
+                CurrentExelData = await _exelService.DownloadFileAsync(SelectedExelFile.FilePath);
+            }
+
+        }
+
+        protected override async void MethodsOnPropertyChanged(string? propertyName)
+        {
+            switch (propertyName) 
+            {
+                case "SelectedExelFile":
+                    CurrentExelData = await _exelService.DownloadFileAsync(SelectedExelFile.FilePath);
+                    break;
+            }
         }
     }
 }

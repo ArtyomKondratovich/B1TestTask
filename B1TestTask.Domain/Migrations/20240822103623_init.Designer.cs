@@ -11,7 +11,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace B1TestTask.DataAccess.Migrations
 {
-    [DbContext(typeof(FirstTaskDbContext))]
+    [DbContext(typeof(TaskDbContext))]
     [Migration("20240822103623_init")]
     partial class init
     {
